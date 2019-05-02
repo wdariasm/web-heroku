@@ -54,4 +54,4 @@ api.add_resource(usuario.UserLogin, '/api/api-token-auth/')
 api.add_resource(grabacion.TestGrabacion, '/api/test/grabacion')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5000)

@@ -3,6 +3,7 @@ from flask import Flask
 from flask_restful import Api
 from api_voice import usuario, concurso, grabacion
 from flask_cors import CORS
+import os
 
 app = Flask( __name__)
 api = Api(app)
@@ -54,4 +55,5 @@ api.add_resource(usuario.UserLogin, '/api/api-token-auth/')
 api.add_resource(grabacion.TestGrabacion, '/api/test/grabacion')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = os.environ.get( 'PORT', 5000)
+    app.run(host='0.0.0.0', port=port)

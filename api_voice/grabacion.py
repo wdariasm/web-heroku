@@ -11,7 +11,7 @@ dynamodb = boto3.resource('dynamodb', region_name=region)
 tabla_grabacion = dynamodb.Table('Grabacion')
 
 queue_url = os.environ.get('SQS_QUEUE_URL')
-print(queue_url)
+
 
 def enviar_mensaje_sqs(grabacion_id, concurso_id, autor):
     try:
@@ -111,24 +111,24 @@ class TestGrabacion(Resource):
             respuesta = None
             for x in range(0, mensajes):
                 id = str( uuid.uuid4())
-                filename = "original/4c6e86bd-cc1e-47ad-ae63-22cadb3cc4cc.ogg"
+                filename = "original/09804dfa-6455-49df-934c-4d7bea3bd772.ogg"
                 fecha = datetime.datetime.now().strftime( '%Y-%m-%d %H:%M:%S.%f' )
 
                 respuesta = tabla_grabacion.put_item(
                     Item={
                         'Nombre_Autor': 'Test ' + str(x),
                         'Apellido_Autor': 'Grabacion ' + str(x),
-                        'Mail_Autor': 'testgrabacion@yopmail.com',
+                        'Mail_Autor': 'testheroku@yopmail.com',
                         'Fecha_Publicacion': fecha,
                         'Archivo_Original': filename,
                         'Estado_Archivo': '0',
                         'Observaciones': 'Ninguna',
-                        'Concurso_id': 'd75152e5-d32a-4e69-b0e6-cae285f306d7',
+                        'Concurso_id': 'a8b80a47-7a4a-428f-80e2-ea5bdef59a91',
                         'Archivo_Final': 'temp',
                         'id': id
                     }
                 )
-                enviar_mensaje_sqs( id, 'd75152e5-d32a-4e69-b0e6-cae285f306d7', 'Test ' + fecha)
+                enviar_mensaje_sqs( id, 'a8b80a47-7a4a-428f-80e2-ea5bdef59a91', 'Test ' + fecha)
 
             return respuesta
 

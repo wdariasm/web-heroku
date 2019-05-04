@@ -6,11 +6,16 @@ import boto3, datetime
 from boto3.dynamodb.conditions import Key
 import json, redis
 from botocore.exceptions import ClientError
+import bmemcached
+from boto3.dynamodb.conditions import Attr
+import random
 
 region = os.environ.get( 'AWS_DEFAULT_REGION' )
 dynamodb = boto3.resource( 'dynamodb', region_name=region )
 tabla_concurso = dynamodb.Table('Concurso' )
 url_redis = os.environ.get( 'URL_REDIS' )
+user_cache = os.environ.get( 'USER_CACHE' )
+pass_cache = os.environ.get( 'PASSWORD_CACHE' )
 
 def ConexionRedis():
     r = redis.StrictRedis( host=url_redis, port=6379, db=0, decode_responses=True)
@@ -59,20 +64,6 @@ class Concurso( Resource ):
                 },
                 ReturnValues="UPDATED_NEW"
             )
-            if (respuesta['ResponseMetadata']['HTTPStatusCode'] == 200):
-                nombre_hash = 'concurso:' + concurso_id
-                datos_concurso = {
-                    'Nombre': content['Nombre'],
-                    'Url_Concurso': content['Url'],
-                    'Fecha_Fin': content['Fecha_Fin'],
-                    'Fecha_Inicio': content['Fecha_Inicio'],
-                    'Premio': content['Premio'],
-                    'Guion': content['Guion'],
-                    'Recomendaciones': content['Recomendaciones']
-                }
-                con_redis = ConexionRedis()
-                con_redis.hmset( nombre_hash, datos_concurso )
-
             return respuesta
 
         except Exception as ex:
@@ -84,11 +75,6 @@ class Concurso( Resource ):
                 Key={'id': concurso_id}
             )
 
-            if (respuesta['ResponseMetadata']['HTTPStatusCode'] == 200):
-                con_redis = ConexionRedis()
-                nombre_hash = 'concurso:' + concurso_id
-                con_redis.delete(nombre_hash)
-
             return respuesta
         except Exception as ex:
             print(ex)
@@ -97,18 +83,8 @@ class Concurso( Resource ):
 class ConcursoList( Resource ):
     def get(self):
         try:
-            """
-            con_redis = ConexionRedis()
-            
-            list_data = []
-            for key in con_redis.scan_iter( "concurso:*" ):
-                datos = con_redis.hgetall( key )
-                list_data.append( datos ) 
-            """
             respuesta = tabla_concurso.scan()
             return respuesta['Items']
-
-            #return list_data
 
         except ClientError as error:
             print(error)
@@ -161,11 +137,6 @@ class ConcursoList( Resource ):
 
             print(respuesta['ResponseMetadata']['HTTPStatusCode'])
 
-            if (respuesta['ResponseMetadata']['HTTPStatusCode'] == 200):
-                nombre_hash = 'concurso:' + id
-                con_redis = ConexionRedis()
-                con_redis.hmset( nombre_hash, datos_concurso)
-
             return respuesta
 
         except ClientError as error:
@@ -204,3 +175,25 @@ class ConcursoCache(Resource):
     def get(self):
         respuesta = tabla_concurso.scan()
         return respuesta['Items']
+
+class ConcursoRedis(Resource):
+    def get(self):
+        client = bmemcached.Client( url_redis, user_cache, pass_cache )
+        return client.get_multi()
+
+    def post(self):
+        client = bmemcached.Client( url_redis, user_cache, pass_cache )
+        listVistas = []
+        for i in range(5):
+            listVistas.append(random.randint(50, 200))
+        listVistas.sort()
+
+        response = tabla_concurso.scan(Limit = 5)
+
+        cont = 0
+        for item in response['Items']:
+            concurso_r = dict(id = item['id'], Nombre = item['Nombre'], Url_Concurso = item['Url_Concurso'], Cantidad_Visitas = listVistas[cont] )
+            client.set_multi(concurso_r, 0, -1)
+            cont +=1
+
+        return response

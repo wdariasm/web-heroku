@@ -18,7 +18,7 @@ class HiFire(Resource):
             )
             messageCount = queueAtr['Attributes']['ApproximateNumberOfMessages']
             response = Response(
-                response=json.dumps( [{"name": "worker", "quantity":messageCount}] ),
+                response=json.dumps( [{"name": "worker", "quantity":int(messageCount)}] ),
                 status=200, mimetype='application/json' )
 
             return response

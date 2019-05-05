@@ -11,6 +11,7 @@ itsdangerous==1.1.0
 Jinja2==2.10
 jmespath==0.9.4
 MarkupSafe==1.1.1
+newrelic==4.18.0.118
 passlib==1.7.1
 PyJWT==1.7.1
 python-binary-memcached==0.28.0

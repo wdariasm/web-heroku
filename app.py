@@ -1,13 +1,13 @@
 from __future__ import print_function
 from flask import Flask
 from flask_restful import Api
-from api_voice import usuario, concurso, grabacion
+from api_voice import usuario, concurso, grabacion, hifire
 from flask_cors import CORS
 import os
 
 app = Flask( __name__)
 api = Api(app)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 """
 @app.route( '/' )
@@ -54,6 +54,7 @@ api.add_resource(concurso.Concurso, '/api/concursos/<concurso_id>/')
 api.add_resource(usuario.UserLogin, '/api/api-token-auth/')
 api.add_resource(grabacion.TestGrabacion, '/api/test/grabacion')
 api.add_resource(concurso.ConcursoCache , '/api/concursos/visitados/')
+api.add_resource(hifire.HiFire, '/hirefire/<string:hifire_token>/info')
 
 if __name__ == '__main__':
     port = os.environ.get( 'PORT', 5000)

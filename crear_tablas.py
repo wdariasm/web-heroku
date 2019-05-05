@@ -87,8 +87,8 @@ tabla_concurso = dynamodb.create_table(
                 'ProjectionType': 'ALL'
             },
             'ProvisionedThroughput': {
-                'ReadCapacityUnits': 123,
-                'WriteCapacityUnits': 123
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
             }
         },
         {
@@ -103,8 +103,8 @@ tabla_concurso = dynamodb.create_table(
                 'ProjectionType': 'ALL'
             },
             'ProvisionedThroughput': {
-                'ReadCapacityUnits': 123,
-                'WriteCapacityUnits': 123
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
             }
         }
     ]
@@ -150,8 +150,8 @@ tabla_grabacion = dynamodb.create_table(
                 'ProjectionType': 'ALL'
             },
             'ProvisionedThroughput': {
-                'ReadCapacityUnits': 123,
-                'WriteCapacityUnits': 123
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
             }
         },
         {
@@ -166,8 +166,8 @@ tabla_grabacion = dynamodb.create_table(
                 'ProjectionType': 'ALL'
             },
             'ProvisionedThroughput': {
-                'ReadCapacityUnits': 123,
-                'WriteCapacityUnits': 123
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
             }
         }
     ]

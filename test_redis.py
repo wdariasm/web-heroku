@@ -13,12 +13,13 @@ app = Flask( __name__ )
 api = Api(app)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-url_redis = os.environ.get('URL_REDIS')
-print(url_redis)
+url_cache = os.environ.get( 'MEMCACHEDCLOUD_SERVERS' )
+user_cache = os.environ.get( 'MEMCACHEDCLOUD_USERNAME' )
+pass_cache = os.environ.get( 'MEMCACHEDCLOUD_PASSWORD' )
 
 
 def ConexionRedis():
-    r = redis.StrictRedis( host=url_redis, port=6379, db=0, socket_timeout=1, decode_responses=True )
+    r = redis.StrictRedis( host=url_cache, port=6379, db=0, socket_timeout=1, decode_responses=True )
     return r
 
 class TestRedis(Resource):

@@ -7,18 +7,18 @@ from boto3.dynamodb.conditions import Key
 import json, redis
 from botocore.exceptions import ClientError
 import bmemcached
-from boto3.dynamodb.conditions import Attr
 import random
 
 region = os.environ.get( 'AWS_DEFAULT_REGION' )
 dynamodb = boto3.resource( 'dynamodb', region_name=region )
 tabla_concurso = dynamodb.Table('Concurso' )
-url_redis = os.environ.get( 'URL_REDIS' )
-user_cache = os.environ.get( 'USER_CACHE' )
-pass_cache = os.environ.get( 'PASSWORD_CACHE' )
+url_cache = os.environ.get('MEMCACHEDCLOUD_SERVERS')
+user_cache = os.environ.get('MEMCACHEDCLOUD_USERNAME')
+pass_cache = os.environ.get('MEMCACHEDCLOUD_PASSWORD')
+
 
 def ConexionRedis():
-    r = redis.StrictRedis( host=url_redis, port=6379, db=0, decode_responses=True)
+    r = redis.StrictRedis( host=url_cache, port=6379, db=0, decode_responses=True)
     return r
 
 class Concurso( Resource ):
@@ -86,15 +86,9 @@ class ConcursoList( Resource ):
             respuesta = tabla_concurso.scan()
             return respuesta['Items']
 
-        except ClientError as error:
-            print(error)
-            response = Response(
-                response=json.dumps( dict( error= error.response['Error']['Message'], url=url_redis, mensaje='boto3', region=region) ),
-                status=502, mimetype='application/json' )
-            return response
         except Exception as ex:
             response = Response(
-                response=json.dumps( dict( error=  str(ex) , url = url_redis, mensaje = 'Generico', region=region ) ),
+                response=json.dumps( dict( error=  str(ex) , mensaje = 'Generico', region=region ) ),
                 status=503, mimetype='application/json' )
             return response
 
@@ -176,24 +170,30 @@ class ConcursoCache(Resource):
         respuesta = tabla_concurso.scan()
         return respuesta['Items']
 
-class ConcursoRedis(Resource):
+class ConcursoCache(Resource):
     def get(self):
-        client = bmemcached.Client( url_redis, user_cache, pass_cache )
-        return client.get_multi()
+        client = bmemcached.Client(url_cache, user_cache, pass_cache)
+        list_vistas = []
+        for x in range(5):
+            concurso_r = client.gets("concurso:" + str(x))[0]
+            if  concurso_r is not None:
+                list_vistas.append(concurso_r)
+        #sorted( list_vistas, key=lambda i: (i['Cantidad_Visitas']))
+        return list_vistas
 
     def post(self):
-        client = bmemcached.Client( url_redis, user_cache, pass_cache )
+        client = bmemcached.Client( url_cache, user_cache, pass_cache )
+
         listVistas = []
         for i in range(5):
             listVistas.append(random.randint(50, 200))
-        listVistas.sort()
 
         response = tabla_concurso.scan(Limit = 5)
-
         cont = 0
         for item in response['Items']:
+            key_name  = "concurso:"+ str(cont)
             concurso_r = dict(id = item['id'], Nombre = item['Nombre'], Url_Concurso = item['Url_Concurso'], Cantidad_Visitas = listVistas[cont] )
-            client.set_multi(concurso_r, 0, -1)
+            client.set( key_name, concurso_r,0,-1)
             cont +=1
 
         return response

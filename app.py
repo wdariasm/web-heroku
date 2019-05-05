@@ -53,7 +53,9 @@ api.add_resource(grabacion.ConcursoGrabacion, '/api/concursos/<string:concurso_i
 api.add_resource(concurso.Concurso, '/api/concursos/<concurso_id>/')
 api.add_resource(usuario.UserLogin, '/api/api-token-auth/')
 api.add_resource(grabacion.TestGrabacion, '/api/test/grabacion')
+api.add_resource(concurso.ConcursoCache , '/api/concursos/visitados/')
 
 if __name__ == '__main__':
     port = os.environ.get( 'PORT', 5000)
-    app.run(host='0.0.0.0', port=port)
+    #app.run(host='0.0.0.0', port=port, debug=True)
+    app.run( host='0.0.0.0', port=port )
